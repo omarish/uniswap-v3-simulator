@@ -8,4 +8,5 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  purge: ['index.html', 'src/**/*.tsx', 'src/**/*.css'],
 }
