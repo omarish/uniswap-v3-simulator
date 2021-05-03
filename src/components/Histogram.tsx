@@ -22,27 +22,33 @@ declare global {
 
 const BarSeries = VerticalBarSeries
 
-export const Histogram = ({ items }: { items: Array<DataPoint> }) => {
+export const Histogram = ({
+  items,
+  className = undefined,
+}: {
+  items: Array<DataPoint>
+  className: any
+}) => {
   return (
-    // <FlexibleWidthXYPlot height={290}>
-    <XYPlot
-      margin={{ left: 60, top: 20 }}
-      height={290}
-      width={720}
-      xDistance={20}
-    >
-      <VerticalGridLines />
-      <HorizontalGridLines />
-      <XAxis />
-      <YAxis />
+    <div className="Chart-Wrapper">
+      <FlexibleWidthXYPlot
+        height={288}
+        className={className}
+        margin={{ left: 60, top: 20, right: 20 }}
+        xDistance={20}
+      >
+        <VerticalGridLines />
+        <HorizontalGridLines />
+        <XAxis />
+        <YAxis />
 
-      <BarSeries
-        className="vertical-bar-series-example"
-        data={items}
-        color="#463DE1"
-        // color="blue"
-      />
-    </XYPlot>
-    // </FlexibleWidthXYPlot>
+        <BarSeries
+          className="vertical-bar-series-example"
+          data={items}
+          color="#463DE1"
+          // color="blue"
+        />
+      </FlexibleWidthXYPlot>
+    </div>
   )
 }

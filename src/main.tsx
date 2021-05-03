@@ -25,7 +25,7 @@ const Card = ({
   className = undefined,
   style = undefined,
 }) => (
-  <div style={style}>
+  <div style={style} className={className}>
     <h2 className="font-bold text-gray-800 mb-1">{title}</h2>
     <div className="bg-white p-2 mb-4 border border-gray-200">{children}</div>
   </div>
@@ -92,7 +92,7 @@ const Value = ({ children = undefined }) => {
   return <code className="tracking-tight">{children}</code>
 }
 
-const GlobalStateCard = () => {
+const GlobalStateCard = ({ className = undefined }) => {
   const globalState = useSelector(state => state.global)
 
   const rows = [
@@ -125,7 +125,7 @@ const GlobalStateCard = () => {
   ]
 
   return (
-    <Card title="Global State">
+    <Card title="Global State" className={className}>
       <Table>
         <tbody>
           {rows.map((row, idx) => (
@@ -137,7 +137,7 @@ const GlobalStateCard = () => {
               })}
             >
               <td className="p-1">{row[0]}</td>
-              <td className="p-1 text-right">{row[1]}</td>
+              <td className="p-1 text-right pl-12">{row[1]}</td>
             </tr>
           ))}
         </tbody>
@@ -156,7 +156,7 @@ const TicksCard = ({ items = [] }: { items: Array<Tick> }) => {
   ]
 
   return (
-    <Card title="Ticks">
+    <Card title="Ticks" style={{ overflowX: 'hidden' }}>
       <Table header={header}>
         <tbody>
           {items.map((item, idx) => (
@@ -176,7 +176,7 @@ const TicksCard = ({ items = [] }: { items: Array<Tick> }) => {
 
 const PositionsCard = ({ items }: { items: Array<LiquidityPosition> }) => {
   return (
-    <Card title="Positions" style={{}}>
+    <Card title="Positions" style={{ overflowX: 'hidden' }}>
       <table className="w-full">
         <thead>
           <tr>
@@ -227,14 +227,6 @@ const PositionsCard = ({ items }: { items: Array<LiquidityPosition> }) => {
   )
 }
 
-const LiquidityChartCard = ({ items = [] }: { items: Array<DataPoint> }) => {
-  return (
-    <Card title="Histogram" className="w-full">
-      <Histogram items={items} />
-    </Card>
-  )
-}
-
 const RANDOM_ETH_ADDRESS = '0xb753504939322f9302E3070A35FD6B34FE48F50C'
 
 import random from 'random'
@@ -264,9 +256,12 @@ const App = () => {
           <Button onClick={handleAddLiquidity}>Add Liquidity</Button>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4 auto-rows-max">
-        <GlobalStateCard />
-        <LiquidityChartCard items={ticksForChart} />
+      <div className="flex space-between">
+        <GlobalStateCard className="w-1/3 mr-4" />
+
+        <Card title="Histogram" className="w-2/3 h-full flex-grow">
+          <Histogram items={ticksForChart} className="w-full" />
+        </Card>
       </div>
       <PositionsCard items={positions} />
       <TicksCard items={ticks} />
