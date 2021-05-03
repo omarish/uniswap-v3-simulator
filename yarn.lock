@@ -727,6 +727,13 @@
     hoist-non-react-statics "^3.3.0"
     redux "^4.0.0"
 
+"@types/react-vis@^1.11.6":
+  version "1.11.6"
+  resolved "https://registry.yarnpkg.com/@types/react-vis/-/react-vis-1.11.6.tgz#0de6c102b0419e6c049e3066c5b85b5d238d7a6d"
+  integrity sha512-om55tYHY7X3dPsIG0IKOi4Cu4FNjRqCXOgfVBcFNuHYLJIZ+Mzlc8uDy7YXNxLAqDOo6tabNIFeTvej2svy95g==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react@*", "@types/react@^17.0.4":
   version "17.0.4"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.4.tgz#a67c6f7a460d2660e950d9ccc1c2f18525c28220"

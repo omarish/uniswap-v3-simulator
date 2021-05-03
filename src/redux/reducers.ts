@@ -60,7 +60,6 @@ declare global {
 
 const positionsReducer = createReducer({}, builder => {
   builder.addCase(addLiquidity, (state, action) => {
-    // state.positions
     const hsh = ethers.utils.solidityKeccak256(
       ['address', 'int24', 'int24'],
       [
@@ -88,33 +87,49 @@ const positionsReducer = createReducer({}, builder => {
   })
 })
 
-const appReducer = createReducer(
-  {
-    counter: 0,
-    sumOfNumberPayloads: 0,
-    unhandledActions: 0,
-  },
-  builder => {
-    builder
-      .addCase(increment, (state, action) => {
-        // action is inferred correctly here
-        state.counter += action.payload
-      })
-      // You can chain calls, or have separate `builder.addCase()` lines each time
-      .addCase(decrement, (state, action) => {
-        state.counter -= action.payload
-      })
-      // You can apply a "matcher function" to incoming actions
-      .addMatcher(isActionWithNumberPayload, (state, action) => {})
-      // and provide a default case if no other handlers matched
-      .addDefaultCase((state, action) => {})
+declare global {
+  type Tick = {
+    liquidityNet: number
+    liquidityGross: number
+    feeGrowthOutside0X128: number
+    feeGrowthOutside1X128: number
+    _tickIndex: number
   }
-)
+}
+
+const ticksReducer = createReducer({}, builder => {
+  builder.addCase(addLiquidity, (state, action) => {
+    const { tickLowerIndex, tickUpperIndex } = action.payload
+    if (Object.keys(state).includes(tickLowerIndex.toString())) {
+      state[tickLowerIndex.toString()].liquidityNet += action.payload.liquidity
+    } else {
+      state[tickLowerIndex.toString()] = {
+        liquidityNet: action.payload.liquidity,
+        liquidityGross: 0,
+        feeGrowthOutside0X128: 0,
+        feeGrowthOutside1X128: 0,
+        _tickIndex: tickLowerIndex,
+      } as Tick
+    }
+
+    if (Object.keys(state).includes(tickUpperIndex.toString())) {
+      state[tickUpperIndex.toString()].liquidityNet -= action.payload.liquidity
+    } else {
+      state[tickUpperIndex.toString()] = {
+        liquidityNet: -1 * action.payload.liquidity,
+        liquidityGross: 0,
+        feeGrowthOutside0X128: 0,
+        feeGrowthOutside1X128: 0,
+        _tickIndex: tickUpperIndex,
+      } as Tick
+    }
+  })
+})
 
 export const rootReducer = combineReducers({
-  app: appReducer,
   global: globalReducer,
   positions: positionsReducer,
+  ticks: ticksReducer,
 })
 
 const allPositions = (state: RootState) => state.positions
@@ -124,4 +139,41 @@ export const positionsArray = createSelector(
   allPositions,
   allPositionKeys,
   (positions, keys) => keys.map(k => positions[k])
+)
+
+const allTicks = (state: RootState) => state.ticks
+const allTicksKeys = (state: RootState) => Object.keys(state.ticks)
+const allTickIndexesAsNumbers = (state: RootState) =>
+  Object.keys(state.ticks).map(x => parseInt(x, 10))
+
+export const ticksArray = createSelector(
+  allTicks,
+  allTicksKeys,
+  (ticks, keys) => {
+    return keys.map(key => ticks[key])
+  }
+)
+
+export const ticksArrayForChart = createSelector(
+  allTicks,
+  allTickIndexesAsNumbers,
+  (ticks, keys) => {
+    const arr = []
+    let acc = 0
+
+    const min = Math.min(...keys)
+    const max = Math.max(...keys)
+
+    for (let tickIndex = min; tickIndex < max; tickIndex++) {
+      if (Object.keys(ticks).includes(tickIndex.toString())) {
+        const tick = ticks[tickIndex.toString()] as Tick
+        acc += tick.liquidityNet
+      }
+      arr.push({
+        x: tickIndex,
+        y: acc,
+      })
+    }
+    return arr
+  }
 )

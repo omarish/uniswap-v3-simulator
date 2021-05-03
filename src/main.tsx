@@ -2,9 +2,14 @@ import clsx from 'clsx'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider, useDispatch } from 'react-redux'
-import { Button } from './components'
+import { Button, Histogram } from './components'
 import { useSelector } from './hooks'
-import { addLiquidity, positionsArray } from './redux/reducers'
+import {
+  addLiquidity,
+  positionsArray,
+  ticksArray,
+  ticksArrayForChart,
+} from './redux/reducers'
 import store from './redux/store'
 import './app.css'
 
@@ -14,8 +19,13 @@ const safeFmt = (x: number | undefined) => {
   }
 }
 
-const Card = ({ title, children = undefined }) => (
-  <div>
+const Card = ({
+  title,
+  children = undefined,
+  className = undefined,
+  style = undefined,
+}) => (
+  <div style={style}>
     <h2 className="font-bold text-gray-800 mb-1">{title}</h2>
     <div className="bg-white p-2 mb-4 border border-gray-200">{children}</div>
   </div>
@@ -136,7 +146,7 @@ const GlobalStateCard = () => {
   )
 }
 
-const TicksCard = () => {
+const TicksCard = ({ items = [] }: { items: Array<Tick> }) => {
   const header = [
     <Var name="tickIndex" solType="int24" />,
     <Var name="liquidityNet" solType="int128" />,
@@ -144,16 +154,29 @@ const TicksCard = () => {
     <Var name="feeGrowthOutside0X128" solType="uint256" />,
     <Var name="feeGrowthOutside1X128" solType="uint256" />,
   ]
+
   return (
     <Card title="Ticks">
-      <Table header={header}></Table>
+      <Table header={header}>
+        <tbody>
+          {items.map((item, idx) => (
+            <tr key={idx}>
+              <td className="text-center">{item._tickIndex}</td>
+              <td className="text-center">{item.liquidityNet}</td>
+              <td className="text-center">{item.liquidityGross}</td>
+              <td className="text-center">{item.feeGrowthOutside0X128}</td>
+              <td className="text-center">{item.feeGrowthOutside1X128}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
     </Card>
   )
 }
 
 const PositionsCard = ({ items }: { items: Array<LiquidityPosition> }) => {
   return (
-    <Card title="Positions">
+    <Card title="Positions" style={{}}>
       <table className="w-full">
         <thead>
           <tr>
@@ -204,6 +227,14 @@ const PositionsCard = ({ items }: { items: Array<LiquidityPosition> }) => {
   )
 }
 
+const LiquidityChartCard = ({ items = [] }: { items: Array<DataPoint> }) => {
+  return (
+    <Card title="Histogram" className="w-full">
+      <Histogram items={items} />
+    </Card>
+  )
+}
+
 const RANDOM_ETH_ADDRESS = '0xb753504939322f9302E3070A35FD6B34FE48F50C'
 
 import random from 'random'
@@ -211,8 +242,8 @@ import random from 'random'
 const addRandomLiquidity = () =>
   addLiquidity({
     sender: RANDOM_ETH_ADDRESS,
-    tickLowerIndex: random.int(0, 2),
-    tickUpperIndex: random.int(10, 12),
+    tickLowerIndex: random.int(-50, 50),
+    tickUpperIndex: random.int(100, 200),
     liquidity: random.int(100, 200),
   })
 
@@ -222,6 +253,8 @@ const App = () => {
   const handleAddLiquidity = () => dispatch(addRandomLiquidity())
 
   const positions = useSelector(positionsArray)
+  const ticks = useSelector(ticksArray)
+  const ticksForChart = useSelector(ticksArrayForChart)
 
   return (
     <div className="px-8 py-4">
@@ -231,12 +264,12 @@ const App = () => {
           <Button onClick={handleAddLiquidity}>Add Liquidity</Button>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 auto-rows-max">
         <GlobalStateCard />
-        <Card title="Histogram">im a chart</Card>
+        <LiquidityChartCard items={ticksForChart} />
       </div>
       <PositionsCard items={positions} />
-      <TicksCard />
+      <TicksCard items={ticks} />
       <hr />
       <p>
         an <a href="http://twitter.com/omarish">@omarish</a> production
